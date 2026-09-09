@@ -43,7 +43,7 @@
         <script>
         var map = L.map('map', {
             zoomControl:false, maxZoom:28, minZoom:1
-        }).fitBounds([[-8.562820122247635,112.92920931146928],[-7.831461660350346,114.21040307059982]]);
+        }).fitBounds([[-8.562820122247635,112.92920931146924],[-7.831461660350346,114.2104030705998]]);
         var hash = new L.Hash(map);
         map.attributionControl.setPrefix('<a href="https://github.com/qgis2web/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
         var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
@@ -321,6 +321,7 @@
             },
         });
         bounds_group.addLayer(layer_RailwayDisusedStationJemberdisusedrailway_station_11);
+        map.addLayer(layer_RailwayDisusedStationJemberdisusedrailway_station_11);
         function pop_RailwayDisusedJemberrailway_disused_12(feature, layer) {
             var popupContent = '<table>\
                     <tr>\
@@ -411,6 +412,7 @@
             style: style_RailwayDisusedJemberrailway_disused_12_0,
         });
         bounds_group.addLayer(layer_RailwayDisusedJemberrailway_disused_12);
+        map.addLayer(layer_RailwayDisusedJemberrailway_disused_12);
         function pop_RailwayAbandonedJemberrailway_abandoned_13(feature, layer) {
             var popupContent = '<table>\
                     <tr>\
@@ -495,6 +497,7 @@
             style: style_RailwayAbandonedJemberrailway_abandoned_13_0,
         });
         bounds_group.addLayer(layer_RailwayAbandonedJemberrailway_abandoned_13);
+        map.addLayer(layer_RailwayAbandonedJemberrailway_abandoned_13);
         function pop_RailwayStationJemberrailway_station_14(feature, layer) {
             var popupContent = '<table>\
                     <tr>\
