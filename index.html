@@ -12,16 +12,177 @@
         <link rel="stylesheet" href="css/fontawesome-all.min.css">
         <link rel="stylesheet" href="css/leaflet.photon.css">
         <link rel="stylesheet" href="css/leaflet-measure.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
         <style>
+        :root {
+            --paper: #EEE4C8;
+            --panel: #F8F2DF;
+            --ink: #221D14;
+            --maroon: #8B3A2B;
+            --brass: #A9823C;
+            --border: #D9C89C;
+        }
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: var(--paper);
+            font-family: 'IBM Plex Sans', sans-serif;
+            color: var(--ink);
+        }
+        .app-shell {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+        .sidebar {
+            width: 320px;
+            flex-shrink: 0;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .sidebar-header {
+            padding: 28px 24px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .sidebar-header h1 {
+            font-family: 'Spectral', serif;
+            font-size: 21px;
+            font-weight: 600;
+            margin: 0 0 8px;
+            line-height: 1.3;
+            color: var(--maroon);
+        }
+        .sidebar-header p {
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.55;
+            color: var(--ink);
+            opacity: 0.72;
+        }
+        #layer-panel {
+            padding: 14px 14px 28px;
+            flex: 1;
+        }
         #map {
-            width: 1455px;
-            height: 840px;
+            flex: 1;
+            height: 100vh;
+        }
+        .embedded-layer-tree.leaflet-control-layers {
+            position: static !important;
+            box-shadow: none !important;
+            border: none !important;
+            background: transparent !important;
+            border-radius: 0 !important;
+            width: 100% !important;
+            max-width: none !important;
+            font-family: 'IBM Plex Sans', sans-serif;
+            color: var(--ink);
+        }
+        .embedded-layer-tree ul { padding-left: 16px; }
+        .embedded-layer-tree label { font-size: 13.5px; }
+        .embedded-layer-tree b {
+            font-family: 'Spectral', serif;
+            font-size: 14.5px;
+            font-weight: 600;
+            color: var(--maroon);
+        }
+        .embedded-layer-tree > ul > li {
+            padding: 10px 10px 12px;
+            margin-bottom: 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: rgba(255,255,255,0.45);
+        }
+        .embedded-layer-tree img { vertical-align: middle; margin-right: 4px; }
+        .leaflet-control-search { border-radius: 8px !important; font-family: 'IBM Plex Sans', sans-serif !important; }
+
+        /* Station detail panel */
+        .sidebar-default { display: flex; flex-direction: column; height: 100%; }
+        .station-panel {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            background: #2E3F32;
+            color: rgba(255,255,255,0.94);
+            padding: 24px 22px 32px;
+            overflow-y: auto;
+        }
+        .sidebar.showing-station .sidebar-default { display: none; }
+        .sidebar.showing-station .station-panel { display: flex; }
+        .station-panel-close {
+            align-self: flex-start;
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.75);
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 12.5px;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            padding: 4px 0;
+            margin-bottom: 18px;
+        }
+        .station-panel-close:hover { color: #fff; text-decoration: underline; }
+        .station-panel h2 {
+            font-family: 'Spectral', serif;
+            font-weight: 600;
+            font-size: 27px;
+            color: #F3EEDB;
+            margin: 0 0 18px;
+            line-height: 1.2;
+        }
+        .station-panel-photo { margin-bottom: 18px; }
+        .station-panel-photo img {
+            width: 100%;
+            display: block;
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 2px;
+        }
+        .station-panel-photo-placeholder {
+            border: 1px dashed rgba(255,255,255,0.3);
+            padding: 32px 12px;
+            text-align: center;
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+            border-radius: 2px;
+        }
+        .station-panel-body { font-size: 13.5px; line-height: 1.75; }
+        .station-panel-body p { margin: 0 0 14px; }
+        .station-panel-body a { color: #F3EEDB; text-decoration: underline; }
+        .station-panel-body a:hover { color: #fff; }
+        @media (max-width: 720px) {
+            .app-shell { flex-direction: column; }
+            .sidebar { width: 100%; max-height: 42vh; border-right: none; border-bottom: 1px solid var(--border); }
+            #map { height: 58vh; }
         }
         </style>
-        <title></title>
+        <title>Jember Railway Heritage Map</title>
     </head>
     <body>
-        <div id="map">
+        <div class="app-shell">
+            <aside class="sidebar" id="sidebarRoot">
+                <div class="sidebar-default">
+                    <div class="sidebar-header">
+                        <h1>Jember Railway Heritage</h1>
+                        <p>Active railway lines and stations today, alongside the historical network mapped from 1940s AMS topographic sheets. Use the panel below to switch layers on and off.</p>
+                    </div>
+                    <div id="layer-panel"></div>
+                </div>
+                <div class="station-panel" id="stationPanel">
+                    <button class="station-panel-close" id="stationPanelClose" type="button" aria-label="Back to layers">&larr; Back to layers</button>
+                    <h2 id="stationPanelTitle"></h2>
+                    <div class="station-panel-photo" id="stationPanelPhoto"></div>
+                    <div class="station-panel-body" id="stationPanelBody"></div>
+                </div>
+            </aside>
+            <div id="map">
+            </div>
         </div>
         <script src="js/qgis2web_expressions.js"></script>
         <script src="js/leaflet.js"></script>
@@ -776,15 +937,54 @@
                 last.style.display = "none";
             }
         });
+        // ---- Station detail panel ----
+        // Add one entry per station here. The key must match that station's
+        // exact "name" value from OpenStreetMap (the same name shown in its
+        // default popup). Leave "photo" blank ("") until you have an image.
+        var stationContent = {
+            "Rambipuji": {
+                title: "Stasiun Rambipuji",
+                photo: "",
+                html: "<p>Replace this paragraph with your own write-up of the station: when it was built, its class/type, notable features, and which lines currently or historically served it.</p><p>You can add a second paragraph like this for branch-line history or other notes. Keep citations/sources in your own words rather than copying text directly from Wikipedia or other sites.</p>"
+            }
+            // "Another Station Name": { title: "...", photo: "images/stations/xxx.jpg", html: "<p>...</p>" },
+        };
+
+        function openStationPanel(feature) {
+            var name = feature && feature.properties ? feature.properties['name'] : null;
+            var data = name ? stationContent[name] : null;
+            if (!data) { return false; }
+            map.closePopup();
+            document.getElementById('stationPanelTitle').textContent = data.title || name;
+            var photoEl = document.getElementById('stationPanelPhoto');
+            if (data.photo) {
+                photoEl.innerHTML = '<img src="' + data.photo + '" alt="' + (data.title || name) + '">';
+            } else {
+                photoEl.innerHTML = '<div class="station-panel-photo-placeholder">Photo not added yet</div>';
+            }
+            document.getElementById('stationPanelBody').innerHTML = data.html || '';
+            document.getElementById('sidebarRoot').classList.add('showing-station');
+            return true;
+        }
+        document.getElementById('stationPanelClose').addEventListener('click', function() {
+            document.getElementById('sidebarRoot').classList.remove('showing-station');
+        });
+        layer_RailwayStationJemberrailway_station_14.on('click', function(e) {
+            openStationPanel(e.layer.feature);
+        });
+        layer_RailwayDisusedStationJemberdisusedrailway_station_11.on('click', function(e) {
+            openStationPanel(e.layer.feature);
+        });
+
         var overlaysTree = [
-        {label: '<b>Modern Rail Structure</b>',  selectAllCheckbox: true, children: [
-            {label: '<img src="legend/RailwayRailJemberrailway_rail_15.png" /> Railway Rail Jember — railway_rail', layer: layer_RailwayRailJemberrailway_rail_15},
-            {label: '<img src="legend/RailwayStationJemberrailway_station_14.png" /> Railway Station Jember — railway_station', layer: layer_RailwayStationJemberrailway_station_14},]},
-        {label: '<b>Historical Rail Structure</b>', collapsed: true, selectAllCheckbox: true, children: [
-            {label: '<img src="legend/RailwayAbandonedJemberrailway_abandoned_13.png" /> Railway Abandoned Jember — railway_abandoned', layer: layer_RailwayAbandonedJemberrailway_abandoned_13},
-            {label: '<img src="legend/RailwayDisusedJemberrailway_disused_12.png" /> Railway Disused Jember — railway_disused', layer: layer_RailwayDisusedJemberrailway_disused_12},
-            {label: '<img src="legend/RailwayDisusedStationJemberdisusedrailway_station_11.png" /> Railway Disused Station Jember — disusedrailway_station', layer: layer_RailwayDisusedStationJemberdisusedrailway_station_11},]},
-        {label: '<b>Detailed Historical map</b>',  selectAllCheckbox: true, children: [
+        {label: '<b>Active Network</b>',  selectAllCheckbox: true, children: [
+            {label: '<img src="legend/RailwayRailJemberrailway_rail_15.png" /> Active railway lines', layer: layer_RailwayRailJemberrailway_rail_15},
+            {label: '<img src="legend/RailwayStationJemberrailway_station_14.png" /> Active stations', layer: layer_RailwayStationJemberrailway_station_14},]},
+        {label: '<b>Historical Network</b>', collapsed: true, selectAllCheckbox: true, children: [
+            {label: '<img src="legend/RailwayAbandonedJemberrailway_abandoned_13.png" /> Abandoned lines', layer: layer_RailwayAbandonedJemberrailway_abandoned_13},
+            {label: '<img src="legend/RailwayDisusedJemberrailway_disused_12.png" /> Disused lines', layer: layer_RailwayDisusedJemberrailway_disused_12},
+            {label: '<img src="legend/RailwayDisusedStationJemberdisusedrailway_station_11.png" /> Disused stations', layer: layer_RailwayDisusedStationJemberdisusedrailway_station_11},]},
+        {label: '<b>Historical Map Sheets</b>',  collapsed: true, selectAllCheckbox: true, children: [
             {label: "Tanggul", layer: layer_Tanggul_10},
             {label: "Kandangan", layer: layer_Kandangan_9},
             {label: "Sukowono", layer: layer_Sukowono_8},
@@ -803,9 +1003,13 @@
             //openedSymbol: '&#8863; &#x1f5c1;',
             //collapseAll: 'Collapse all',
             //expandAll: 'Expand all',
-            collapsed: true,
+            collapsed: false,
         });
         lay.addTo(map);
+        var layerPanelHost = document.getElementById('layer-panel');
+        var layerTreeNode = lay.getContainer();
+        layerTreeNode.classList.add('embedded-layer-tree');
+        layerPanelHost.appendChild(layerTreeNode);
         setBounds();
         L.ImageOverlay.include({
             getBounds: function () {
